@@ -1,7 +1,7 @@
 #ifndef __xtty_h__
 #define __xtty_h__
 
-#include "xqueue.h"
+#include <xqueue.h>
 
 typedef struct
 {
