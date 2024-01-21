@@ -47,13 +47,18 @@ void xtty_irq(const struct device *dev, struct uart_event *evt, void *data)
         // todo: remove dup from xtty_init
         uart_rx_enable(dev, spec->recv_buf, spec->recv->msg_max_length, 10);
         break;
+
+    case UART_TX_DONE:
+    case UART_TX_ABORTED:
+    case UART_RX_STOPPED:
+        break;
     }
 }
 
 int xtty_init(tty_spec_t *xtty, const struct uart_config *spec)
 {
-    ASSERT_RESULT(uart_configure, xtty->uart, spec);
-    ASSERT_RESULT(uart_callback_set, xtty->uart, xtty_irq, xtty);
+    SURE(uart_configure, xtty->uart, spec);
+    SURE(uart_callback_set, xtty->uart, xtty_irq, xtty);
     xtty->recv_buf = k_malloc(xtty->recv->msg_max_length);
     xtty->ovfw_buf = k_malloc(xtty->recv->msg_max_length);
     xtty->ovfw_assigned = 0;
