@@ -4,6 +4,13 @@
 #include <xqueue.h>
 #include <zephyr/drivers/uart.h>
 
+typedef enum
+{
+    XTTY_TX_DONE = 1,
+    XTTY_TX_ABORTED = 2,
+    XTTY_TX_STPOPPED = 4
+} tty_state_t;
+
 typedef struct
 {
     const struct device *uart;
@@ -12,6 +19,8 @@ typedef struct
     uint8_t *recv_buf;
     uint8_t *ovfw_buf;
     uint8_t ovfw_assigned;
+    tty_state_t state;
+    uint8_t sent_count;
 } tty_spec_t;
 
 int xtty_init(tty_spec_t *xtty, const struct uart_config *spec);
@@ -28,5 +37,10 @@ int xtty_init(tty_spec_t *xtty, const struct uart_config *spec);
     _queue.uart = _tty_dev;                                                  \
     _queue.recv = &_queue##_recv_spec;                                       \
     _queue.send = &_queue##_send_spec;
+
+void xtty_sender_thread(tty_spec_t *xtty, int32_t sleep_time_usec);
+
+#define DEFINE_XTTY_SENDER_THREAD(sender_id, stack_size, p_xtty, sleep_time_usec, thread_priority) \
+    K_THREAD_DEFINE(xtty_sender_id, stack_size, xtty_sender_thread, &p_xtty, sleep_time_usec, NULL, thread_priority, 0, 0)
 
 #endif
